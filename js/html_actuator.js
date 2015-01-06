@@ -3,7 +3,8 @@ function HTMLActuator() {
   this.scoreContainer   = document.querySelector(".score-container");
   this.bestContainer    = document.querySelector(".best-container");
   this.messageContainer = document.querySelector(".game-message");
-
+  this.timerContainer = document.querySelector(".timer-container");
+  
   this.score = 0;
 }
 
@@ -136,4 +137,8 @@ HTMLActuator.prototype.clearMessage = function () {
   // IE only takes one value to remove at a time.
   this.messageContainer.classList.remove("game-won");
   this.messageContainer.classList.remove("game-over");
+};
+
+HTMLActuator.prototype.updateTimer = function (theTime) {
+	  this.timerContainer.textContent = theTime;
 };

@@ -1,9 +1,10 @@
-function GameManager(size, InputManager, Actuator, StorageManager) {
+function GameManager(size, InputManager, Actuator, StorageManager, TimeManager) {
   this.size           = size; // Size of the grid
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
-
+  this.timer		  = new TimeManager;
+  
   this.startTiles     = 2;
 
   this.inputManager.on("move", this.move.bind(this));
@@ -17,6 +18,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 GameManager.prototype.restart = function () {
   this.storageManager.clearGameState();
   this.actuator.continueGame(); // Clear the game won/lost message
+  this.timer.stop();
   this.setup();
 };
 
@@ -52,12 +54,17 @@ GameManager.prototype.setup = function () {
 
     // Add the initial tiles
     this.addStartTiles();
+    
+    this.timer.start(this, this.timerCallback);
   }
 
   // Update the actuator
   this.actuate();
 };
-
+// Set up the timer
+GameManager.prototype.timerCallback = function (obj) {
+	obj.actuator.updateTimer(obj.timer.output());
+}
 // Set up the initial tiles to start the game with
 GameManager.prototype.addStartTiles = function () {
   for (var i = 0; i < this.startTiles; i++) {
@@ -131,7 +138,10 @@ GameManager.prototype.move = function (direction) {
   // 0: up, 1: right, 2: down, 3: left
   var self = this;
 
-  if (this.isGameTerminated()) return; // Don't do anything if the game's over
+  if (this.isGameTerminated()) {
+	  this.timer.stop();
+	  return; // Don't do anything if the game's over
+  }
 
   var cell, tile;
 
@@ -167,7 +177,10 @@ GameManager.prototype.move = function (direction) {
           self.score += merged.value;
 
           // The mighty 2048 tile
-          if (merged.value === 2048) self.won = true;
+          if (merged.value === 256) {
+        	  self.won = true;
+        	  self.timer.stop();
+          }
         } else {
           self.moveTile(tile, positions.farthest);
         }
